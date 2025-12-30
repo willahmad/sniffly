@@ -9,6 +9,30 @@ import os
 from pathlib import Path
 from typing import Any
 
+
+def get_claude_config_dir() -> Path:
+    """Get the Claude configuration directory.
+
+    Checks the CLAUDE_CONFIG_DIR environment variable first,
+    then falls back to ~/.claude.
+
+    Returns:
+        Path to the Claude configuration directory
+    """
+    config_dir = os.environ.get("CLAUDE_CONFIG_DIR")
+    if config_dir:
+        return Path(config_dir)
+    return Path.home() / ".claude"
+
+
+def get_claude_projects_dir() -> Path:
+    """Get the Claude projects directory where logs are stored.
+
+    Returns:
+        Path to the Claude projects directory (~/.claude/projects or $CLAUDE_CONFIG_DIR/projects)
+    """
+    return get_claude_config_dir() / "projects"
+
 # Default configuration values
 DEFAULTS = {
     "port": 8081,

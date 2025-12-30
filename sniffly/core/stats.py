@@ -21,6 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from ..config import get_claude_projects_dir
 from ..utils.pricing import calculate_cost
 from .constants import ERROR_PATTERNS, USER_INTERRUPTION_API_ERROR, USER_INTERRUPTION_PATTERNS
 
@@ -121,9 +122,11 @@ class StatisticsGenerator:
         project_name = "Unknown Project"
         log_dir_name = Path(self.log_directory).name  # Full directory name like -Users-chip-dev-...
 
-        if "/.claude/projects/" in self.log_directory:
-            # Extract the project path part after /projects/
-            project_part = self.log_directory.split("/.claude/projects/")[-1]
+        # Check if this log directory is under the Claude projects directory
+        projects_dir = str(get_claude_projects_dir())
+        if projects_dir in self.log_directory:
+            # Extract the project path part after the projects directory
+            project_part = self.log_directory.split(projects_dir)[-1].lstrip("/")
             # Convert hashed path back to readable format
             if project_part.startswith("-"):
                 # Remove leading dash and replace remaining dashes with slashes

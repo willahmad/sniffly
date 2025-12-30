@@ -6,6 +6,8 @@ import logging
 import os
 from pathlib import Path
 
+from sniffly.config import get_claude_projects_dir
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +39,7 @@ def find_claude_logs(project_path: str) -> str | None:
     converted_path = project_path.replace("/", "-")
 
     # Construct the Claude log path
-    claude_base = Path.home() / ".claude" / "projects"
+    claude_base = get_claude_projects_dir()
     log_path = claude_base / converted_path
 
     # Check if it exists
@@ -66,7 +68,7 @@ def list_all_claude_projects() -> list:
         List of tuples (project_path, log_path)
     """
     projects = []
-    claude_base = Path.home() / ".claude" / "projects"
+    claude_base = get_claude_projects_dir()
 
     if not claude_base.exists():
         return projects
@@ -131,7 +133,7 @@ def get_all_projects_with_metadata() -> list[dict]:
         - display_name: Human-readable project name
     """
     projects = []
-    claude_base = Path.home() / ".claude" / "projects"
+    claude_base = get_claude_projects_dir()
 
     if not claude_base.exists():
         return projects

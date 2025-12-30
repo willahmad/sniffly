@@ -14,6 +14,12 @@ import pytest
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
+def patch_claude_projects_dir(temp_dir: Path):
+    """Patch get_claude_projects_dir to return temp_dir/.claude/projects."""
+    projects_dir = temp_dir / ".claude" / "projects"
+    return patch("sniffly.utils.cache_warmer.get_claude_projects_dir", return_value=projects_dir)
+
+
 class TestServerImports:
     """Test that server modules can be imported without errors."""
     
@@ -95,24 +101,22 @@ class TestCacheWarmerFunction:
     async def test_warm_recent_projects_handles_empty_dir(self):
         """Test that warm_recent_projects handles missing directories gracefully."""
         from sniffly.utils.cache_warmer import warm_recent_projects
-        
+
         mock_cache_service = Mock()
         mock_memory_cache = Mock()
-        
-        with patch('pathlib.Path.home') as mock_home:
-            # Create a temporary directory that doesn't have .claude/projects
-            with tempfile.TemporaryDirectory() as temp_dir:
-                mock_home.return_value = Path(temp_dir)
-                
+
+        # Create a temporary directory that doesn't have .claude/projects
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch_claude_projects_dir(Path(temp_dir)):
                 # Should complete without errors
                 await warm_recent_projects(
-                    mock_cache_service, 
-                    mock_memory_cache, 
+                    mock_cache_service,
+                    mock_memory_cache,
                     None,
                     exclude_current=False,
                     limit=3
                 )
-        
+
         # Should not have tried to cache anything
         mock_memory_cache.put.assert_not_called()
     
@@ -120,32 +124,30 @@ class TestCacheWarmerFunction:
     async def test_warm_recent_projects_skips_current(self):
         """Test that warm_recent_projects can skip the current project."""
         from sniffly.utils.cache_warmer import warm_recent_projects
-        
+
         mock_cache_service = Mock()
         mock_memory_cache = Mock()
         mock_memory_cache.get.return_value = None
-        
+
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create mock project structure
             claude_dir = Path(temp_dir) / ".claude" / "projects"
             claude_dir.mkdir(parents=True)
-            
+
             # Create two project dirs
             project1 = claude_dir / "project1"
             project1.mkdir()
             (project1 / "log.jsonl").write_text('{"type": "user"}\n')
-            
+
             project2 = claude_dir / "project2"
             project2.mkdir()
             (project2 / "log.jsonl").write_text('{"type": "user"}\n')
-            
-            with patch('pathlib.Path.home') as mock_home:
-                mock_home.return_value = Path(temp_dir)
-                
+
+            with patch_claude_projects_dir(Path(temp_dir)):
                 # Mock processor to avoid actual processing
                 with patch('sniffly.utils.cache_warmer.ClaudeLogProcessor') as mock_processor:
                     mock_processor.return_value.process_logs.return_value = ([], {})
-                    
+
                     # Warm with current project = project1
                     await warm_recent_projects(
                         mock_cache_service,
@@ -154,10 +156,10 @@ class TestCacheWarmerFunction:
                         exclude_current=True,
                         limit=5
                     )
-            
-            # Should only process project2
-            assert mock_processor.call_count == 1
-            assert "project2" in str(mock_processor.call_args[0][0])
+
+                    # Should only process project2
+                    assert mock_processor.call_count == 1
+                    assert "project2" in str(mock_processor.call_args[0][0])
 
 
 class TestMemoryCacheFunctionality:

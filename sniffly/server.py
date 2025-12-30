@@ -23,7 +23,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from sniffly.api.messages import get_messages_summary, get_paginated_messages
-from sniffly.config import Config
+from sniffly.config import Config, get_claude_projects_dir
 from sniffly.core.processor import ClaudeLogProcessor
 from sniffly.utils.cache_warmer import warm_recent_projects
 from sniffly.utils.local_cache import LocalCacheService
@@ -258,7 +258,7 @@ async def set_project_by_dir(data: dict[str, str]):
         raise HTTPException(status_code=400, detail="Directory name is required")
 
     # Build the log path
-    claude_base = Path.home() / ".claude" / "projects"
+    claude_base = get_claude_projects_dir()
     log_path = claude_base / dir_name
 
     if not log_path.exists() or not log_path.is_dir():
@@ -717,7 +717,7 @@ async def get_jsonl_files(project: str | None = None):
 
     # If specific project provided, use that
     if project:
-        claude_base = Path.home() / ".claude" / "projects"
+        claude_base = get_claude_projects_dir()
         log_path = str(claude_base / project)
 
     if not log_path:
@@ -816,7 +816,7 @@ async def get_jsonl_content(file: str, project: str | None = None):
 
     # If specific project provided, use that
     if project:
-        claude_base = Path.home() / ".claude" / "projects"
+        claude_base = get_claude_projects_dir()
         log_path = str(claude_base / project)
 
     if not log_path:
@@ -912,7 +912,7 @@ async def get_jsonl_content(file: str, project: str | None = None):
 async def get_recent_projects():
     """Get list of recent projects from Claude logs"""
     try:
-        claude_base = Path.home() / ".claude" / "projects"
+        claude_base = get_claude_projects_dir()
         if not claude_base.exists():
             return JSONResponse({"projects": []})
 

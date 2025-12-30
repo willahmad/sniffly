@@ -2,7 +2,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from sniffly.config import Config
+from sniffly.config import Config, get_claude_projects_dir
 from sniffly.core.processor import ClaudeLogProcessor
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ async def warm_recent_projects(
     try:
         # Get recent projects
         log_dirs = []
-        claude_base = Path.home() / ".claude" / "projects"
+        claude_base = get_claude_projects_dir()
 
         if claude_base.exists():
             # Get all directories with their most recent JSONL modification times
