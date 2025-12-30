@@ -33,8 +33,8 @@ class TestProcessingPerformance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test data directory"""
-        cls.test_data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'mock-data', '-Users-chip-dev-big-project')
-        
+        cls.test_data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'mock-data', '-Users-chip-dev-ai-music')
+
     def test_full_processing_time(self):
         """Test time from loading project to dashboard data ready"""
         
@@ -363,12 +363,12 @@ class TestProcessingPerformance(unittest.TestCase):
 
 class TestScalabilityProjections(unittest.TestCase):
     """Test to project performance at different scales"""
-    
+
     @classmethod
     def setUpClass(cls):
         """Set up test data directory"""
-        cls.test_data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'mock-data', '-Users-chip-dev-big-project')
-    
+        cls.test_data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'mock-data', '-Users-chip-dev-ai-music')
+
     def test_scalability_projections(self):
         """Project performance for different data sizes"""
         
